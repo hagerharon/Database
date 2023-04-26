@@ -1,0 +1,211 @@
+Name: Hager Haron 
+Track: python 22-23
+
+
+----------------lab3-------------------------------------------------------------------------------------------------
+
+---------------Question No(1)-----------------
+
+--create database Proogramatically
+---------------Question No(2) Part(a)-----------------
+
+-------------------table Department---------------
+use Proogramatically
+create table Department (
+DeptNo int identity (1,1),----pri
+DeptName nvarchar(20),
+LOcations char(2)  DEFAULT 'NY' not null,
+CONSTRAINT CHK_loc CHECK (LOcations in ('NY','WK','DS')) ,
+)
+
+---------------Question No(2) Part(b)-----------------
+
+-------------------table Employee---------------
+use Proogramatically
+create table Employee 
+(
+	EmpNo int identity (1,1), -- primary key,
+	EmpFname varchar(25) not null,
+	Emplname varchar(25) not null,
+	Dpetno char(2),
+	Salary int unique  CHECK (Salary between 700 and 6000),
+	constraint emploeePK primary key (EmpNo)
+
+
+-------------------table Project---------------
+use Proogramatically
+create table Project 
+(
+	ProjNum char(2) not null, -- primary key,
+	ProjectName varchar(100) not null,
+	Budget varchar(25)  null,
+	constraint emploeePK2 primary key (ProjNum)
+)
+-------------------table worksON---------------
+use Proogramatically
+create table Works_ON 
+(
+	EmpNo int not null, -- primary key,
+	ProjNum char(2) not null,---primary
+	Job varchar(25) null,
+	Enter_Date date DEFAULT GETDATE() not null,
+    CONSTRAINT PK_Person PRIMARY KEY (EmpNo,ProjNum),
+	FOREIGN KEY (EmpNo) REFERENCES Employee(EmpNo),
+	FOREIGN KEY (ProjNum) REFERENCES Project(ProjNum),
+
+
+)
+
+use Proogramatically
+insert into dbo.Employee
+values (253448,'Mathew','Smmith','d3',2500),(10102,'Ann','Jones','d3',3000),(18316,'Jone','Barrimore','d1',2400),
+(29346,'James','James','d2',2800),(9031,'Lisa','Bertoni','d2',4000),(2581,'Elisia','Hansel','d2',3600),
+(28559,'Sybl','Moser','d1',2900)
+use Proogramatically
+insert into Project
+VALUES('P1','Apollo',120000),('P2','Gemini',95000),('P3','Mercury',185600)
+use Proogramatically
+insert into Works_ON
+VALUES(10102,'p1','Analyst','2006-10-01'),(10102,'p3','Manager','2008-01-1'),(25348,'p2','Clerk','2007-02-15'),(18316,'p2','','2007-6-1'),(29346,'p2','','2006-12-15'),
+(2581,'p3','Analyst','2007-10-15'),(9031,'p1','Manager','2007-04-15'),(28559,'p1','','2007-08-01'),(28559,'p2','Clerk','2008-08-01'),
+(9031,'p3','Clerk','2006-11-15'),(29346,'p1','Clerk','2007-04-01')
+
+---------------Question No(3) Part(a)-----------------
+ALTER TABLE Employee
+ADD TelephonNumber VARCHAR(11);
+---------------Question No(3) Part(b)-----------------
+alter table Employee
+Drop Column TelephonNumber;
+---------------Question No(4) Part(a-i)-----------------
+go
+create schema Company;
+use Proogramatically
+
+create table Company.emp2
+(
+EmpID int null,
+)
+---------------Question No(4) Part(b-ii)-----------------
+use Proogramatically
+
+alter schema Company 
+transfer dbo.Department
+
+alter schema Company 
+transfer Company.Employee
+
+---------------Question No(5)-----------------
+/*
+ALTER TABLE DROP COLUMN EmpNo failed because one or more objects access this column.
+use Proogramatically
+alter table Company.Employee
+Drop Column EmpNo;*/
+-----------------------------------
+/*	Can a Primary key refer to Unique key instead of Foreign key?	
+Yes 
+*/
+---------------Question No(6)-----------------
+/*done*/
+
+create view enterdata 
+as
+select NA.EmpFname as [EmpFname], 
+PJ.ProjectName as [ProjectName],
+wop.ProjNum as [ProjNum],
+woE.EmpNo as [EmpNo]
+
+from [Company.Employee].[EmpFname] as NA, 
+[project].[ProjectName] as PJ,
+[Works_ON].[ProjNum] as wopJ,
+[Works_ON].[EmpNo] as woEJ
+
+
+join [Company.Employee].[EmpFname] as NAJ
+on NA.EmpNo = NAJ.EmpNo
+
+join [project].[ProjNum] as PJJ
+on PJ.ProjNum = PJJ.ProjNum
+
+join [Works_ON].[ProjNum] as wopJ
+on wop.ProjNum = wopJ.ProjNum
+join [Works_ON].[EmpNo] as woEJ
+on woE.EmpNo = woEJ.EmpNo
+
+
+---------------Question No(7)-----------------
+/*Try update and Delete on the previous data.*/
+
+/*Testing Referential Integrity:
+Change the employee number 10102  to 11111  in the works on table [is there error what is it].*/
+DELETE FROM Works_ON WHERE Works_ON.EmpNo=2001;
+UPDATE Works_ON
+SET EmpNo =11111
+WHERE Works_ON.EmpNo= 10102;
+---------------Question No(11)-----------------
+select EmpFname,Emplname from Company.Employee
+where EmpFname='Ms' and Emplname='Antrim'
+---------------Question No(12)-----------------
+select Enter_Date from Works_ON
+where Enter_Date between '2007-08-01' and '2008-08-01'
+---------------Question No(13)-----------------
+select Salary from Company.Employee
+where Salary < $110.00 
+---------------Question No(14)-----------------
+
+CREATE FUNCTION udf_get_FullName (@EmpFname Varchar(25), @Emplname Varchar(25)
+RETURNS Varchar(50)
+WITH SCHEMABINDING
+BEGIN
+   DECLARE @FullName  Varchar(50)
+   SELECT @FullName 
+		 = @EmpFname + ' ' + @Emplname;
+   RETURN @FullName 
+END
+ALTER TABLE [Company].[Employee]
+ADD   FullName 
+AS dbo.udf_get_FullName ([EmpFname],[Emplname])
+
+
+---------------Question No(15)-----------------
+SELECT ProjectName 
+FROM Project 
+WHERE ProjectName LIKE 'B%';
+---------------Question No(16)-----------------
+SELECT  Job
+FROM Works_ON 
+WHERE Job LIKE 'B%';
+---------------Question No(17)-----------------
+SELECT SUM(Salary)
+FROM Company.Employee;
+---------------Question No(18)-----------------
+SELECT AVG(Salary)
+FROM Company.Employee;
+---------------------------------------------------------------------------------------------------------
+
+
+/*lab5
+---------------Question No(1)-----------------
+*/
+create view clerk
+as
+select EmpFname,ProjectName as 'clerk'
+from [Company.Employee],[Project]
+on [Company.Employee].[EmpNo]=[Works_ON].[EmpNo] and [Works_ON].[ProjNum] = [Project].[ProjNum]
+where Company.Employee.EmpFname = 'Clerk'
+with check option;
+
+---------------Question No(2)-----------------
+create view Dataproject
+as
+select ProjectName,EmpNo
+from [Project],[Works_ON]
+where [ProjectName]in (select ProjectName from Works_ON
+where [EmpFname] in (select EmpFname from Company.Employee 
+where  Company.Employee.EmpFname=''))
+with check option;
+
+
+/*  no*/
+/*b any change just in view*/
+/*c  to sure condition in view*/
+/*d  nothing */
